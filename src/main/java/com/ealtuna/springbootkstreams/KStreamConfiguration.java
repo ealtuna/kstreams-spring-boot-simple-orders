@@ -21,8 +21,21 @@ public class KStreamConfiguration {
     private static final String INPUT_TOPIC_NAME = "orders";
     public static final String OUTPUT_TOPIC_NAME = "even-orders";
 
+    /*
+    if want to create more fine grain configuration you can use a Bean like:
+
+    @Autowired private KafkaProperties kafkaProperties;
+
+    @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
+    public StreamsConfig kStreamsConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "test-streams");
+        return new StreamsConfig(props);
+    }
+    * */
+
     @Bean
-    public KStream<String, Order> kStream(StreamsBuilder kStreamBuilder) {
+    public KStream<String, Order> filterEvenOrders(StreamsBuilder kStreamBuilder) {
         KStream<String, Order> input = kStreamBuilder.stream(INPUT_TOPIC_NAME, Consumed.with(Serdes.String(), new JsonSerde<>(Order.class)));
         input.print(Printed.toSysOut());
 
