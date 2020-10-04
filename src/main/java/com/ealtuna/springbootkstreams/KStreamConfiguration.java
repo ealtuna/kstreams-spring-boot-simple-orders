@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 
 import lombok.Data;
+import org.springframework.kafka.support.KafkaStreamBrancher;
 import org.springframework.kafka.support.serializer.JsonSerde;
 
 import java.time.Instant;
@@ -37,7 +38,12 @@ public class KStreamConfiguration {
     @Bean
     public KStream<String, Order> filterEvenOrders(StreamsBuilder kStreamBuilder) {
         KStream<String, Order> input = kStreamBuilder.stream(INPUT_TOPIC_NAME, Consumed.with(Serdes.String(), new JsonSerde<>(Order.class)));
-        input.print(Printed.toSysOut());
+        // input.print(Printed.toSysOut());
+
+        new KafkaStreamBrancher<String, Order>()
+                .branch((k, v) -> v.orderid % 2 == 0, ks -> ks.print(Printed.toSysOut()))
+                .onTopOf(input)
+                .print(Printed.toSysOut());
 
         // Simple filter to stream all event orderid
         KStream<String, Order> output = input.filter((key, value) -> value.orderid % 2 == 0 );
